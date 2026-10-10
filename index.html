@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trắc nghiệm Ôn tập Bài giảng C3 - Giáo dục Quốc phòng và An ninh</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+    </style>
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col justify-between">
+
+    <!-- Header -->
+    <header class="bg-slate-800 border-b border-slate-700 py-4 px-6 shadow-md">
+        <div class="max-w-4xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-2">
+            <h1 class="text-xl font-bold text-emerald-400 flex items-center gap-2">
+                <span>🛡️</span> Ôn Tập Bài Giảng C3 - GDQP&AN
+            </h1>
+            <div id="quiz-status" class="text-sm bg-slate-700 px-3 py-1.5 rounded-full text-slate-300 hidden">
+                Câu hỏi: <span id="current-q-num">1</span> / <span id="total-q-num">20</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="max-w-3xl w-full mx-auto p-4 sm:p-6 my-auto">
+        
+        <!-- Welcome Screen -->
+        <div id="welcome-screen" class="bg-slate-800 border border-slate-700 rounded-2xl p-6 sm:p-8 shadow-xl text-center">
+            <div class="text-5xl mb-4">🎯</div>
+            <h2 class="text-2xl font-bold mb-3 text-white">Kiểm tra & Ôn tập Kiến thức Bài C3</h2>
+            <p class="text-slate-300 mb-6 leading-relaxed">
+                Hệ thống gồm <strong>20 câu hỏi</strong> bám sát nội dung bài giảng. Mỗi khi bạn tải lại trang hoặc bấm bắt đầu, các câu hỏi và đáp án sẽ được <strong>tự động đảo ngẫu nhiên</strong>. Kết quả sẽ được quy đổi trực tiếp theo thang điểm <strong>0 - 10</strong>.
+            </p>
+            <button onclick="startQuiz()" class="bg-emerald-600 hover:bg-emerald-500 text-white font-semibold px-8 py-3 rounded-xl shadow-lg transition-all duration-200 transform hover:scale-105">
+                Bắt đầu làm bài ngay
+            </button>
+        </div>
+
+        <!-- Quiz Screen -->
+        <div id="quiz-screen" class="bg-slate-800 border border-slate-700 rounded-2xl p-6 sm:p-8 shadow-xl hidden">
+            <!-- Progress Bar -->
+            <div class="w-full bg-slate-700 h-2.5 rounded-full mb-6 overflow-hidden">
+                <div id="progress-bar" class="bg-emerald-500 h-full transition-all duration-300" style="width: 0%"></div>
+            </div>
+
+            <!-- Question Box -->
+            <div class="mb-6">
+                <span id="question-tag" class="text-xs font-semibold uppercase tracking-wider text-emerald-400 bg-emerald-950/60 border border-emerald-800 px-2.5 py-1 rounded-md inline-block mb-3">Chủ đề: QĐND Việt Nam & Các Quân Binh Chủng</span>
+                <h3 id="question-text" class="text-lg sm:text-xl font-medium text-white leading-relaxed"></h3>
+            </div>
+
+            <!-- Options List -->
+            <div id="options-container" class="space-y-3 mb-6">
+                <!-- Dynamic options generated via JS -->
+            </div>
+
+            <!-- Rationale Box (Hidden until answered) -->
+            <div id="rationale-box" class="hidden bg-slate-900/80 border border-slate-700 p-4 rounded-xl mb-6 text-sm">
+                <p class="font-semibold text-emerald-400 mb-1">💡 Giải thích chi tiết:</p>
+                <p id="rationale-text" class="text-slate-300 leading-relaxed"></p>
+            </div>
+
+            <!-- Navigation Buttons -->
+            <div class="flex justify-between items-center pt-4 border-t border-slate-700">
+                <button id="prev-btn" onclick="prevQuestion()" class="bg-slate-700 hover:bg-slate-600 text-slate-200 px-5 py-2.5 rounded-xl text-sm font-medium transition disabled:opacity-40 disabled:cursor-not-allowed">
+                    ← Câu trước
+                </button>
+                <button id="next-btn" onclick="nextQuestion()" class="bg-emerald-600 hover:bg-emerald-500 text-white px-6 py-2.5 rounded-xl text-sm font-medium transition shadow-md">
+                    Câu tiếp theo →
+                </button>
+            </div>
+        </div>
+
+        <!-- Result Screen -->
+        <div id="result-screen" class="bg-slate-800 border border-slate-700 rounded-2xl p-6 sm:p-8 shadow-xl text-center hidden">
+            <div class="text-6xl mb-3">🏆</div>
+            <h2 class="text-2xl font-bold text-white mb-2">Hoàn thành bài kiểm tra!</h2>
+            <p class="text-slate-300 mb-6">Dưới đây là kết quả chi tiết của bạn dựa trên thang điểm 0 - 10.</p>
+            
+            <div class="bg-slate-900 border border-slate-700 p-6 rounded-2xl max-w-sm mx-auto mb-6 shadow-inner">
+                <p class="text-sm text-slate-400 mb-1">Điểm số chính xác:</p>
+                <div class="text-5xl font-black text-emerald-400 mb-2"><span id="final-score">0.0</span> <span class="text-xl text-slate-400 font-normal">/ 10</span></div>
+                <p id="score-comment" class="text-sm font-medium text-slate-300"></p>
+            </div>
+
+            <div class="flex flex-col sm:flex-row justify-center gap-3">
+                <button onclick="restartQuiz()" class="bg-emerald-600 hover:bg-emerald-500 text-white font-semibold px-6 py-3 rounded-xl shadow-lg transition">
+                    🔄 Làm lại (Đảo câu hỏi mới)
+                </button>
+                <button onclick="reviewAnswers()" class="bg-slate-700 hover:bg-slate-600 text-slate-200 font-semibold px-6 py-3 rounded-xl transition">
+                    📝 Xem lại đáp án chi tiết
+                </button>
+            </div>
+        </div>
+
+        <!-- Review Screen -->
+        <div id="review-screen" class="bg-slate-800 border border-slate-700 rounded-2xl p-6 sm:p-8 shadow-xl hidden">
+            <h2 class="text-xl font-bold text-white mb-4 flex items-center justify-between">
+                <span>Chi tiết đáp án</span>
+                <button onclick="backToResult()" class="text-sm bg-slate-700 hover:bg-slate-600 px-3 py-1 rounded-lg text-slate-300">Quay lại kết quả</button>
+            </h2>
+            <div id="review-list" class="space-y-6 max-h-[60vh] overflow-y-auto pr-2">
+                <!-- Filled via JS -->
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="text-center py-4 text-xs text-slate-500 border-t border-slate-800">
+        Giáo dục Quốc phòng và An ninh - Bài giảng C3 | Hệ thống tự động đảo câu hỏi & chấm điểm
+    </footer>
+
+    <!-- Quiz Logic Script -->
+    <script>
+        const rawQuestionBank = [
+            {
+                question: "Đội Việt Nam tuyên truyền giải phóng quân (tiền thân của Quân đội nhân dân Việt Nam) được thành lập vào ngày tháng năm nào và tại đâu?",
+                options: [
+                    "Ngày 22 tháng 12 năm 1944 tại huyện Nguyên Bình, tỉnh Cao Bằng.",
+                    "Ngày 19 tháng 5 năm 1941 tại Pác Bó, Cao Bằng.",
+                    "Ngày 22 tháng 12 năm 1946 tại Hà Nội.",
+                    "Ngày 07 tháng 5 năm 1954 tại Điện Biên Phủ."
+                ],
+                correct: 0,
+                rationale: "Đội Việt Nam tuyên truyền giải phóng quân được thành lập ngày 22/12/1944 tại huyện Nguyên Bình, tỉnh Cao Bằng dưới sự chỉ huy của đồng chí Võ Nguyên Giáp."
+            },
+            {
+                question: "Hai trận đánh thắng liên tiếp đầu tiên của Đội Việt Nam tuyên truyền giải phóng quân là gì?",
+                options: [
+                    "Trận Phai Khắt và trận Nà Ngần.",
+                    "Trận Điện Biên Phủ và trận Đắk Tô.",
+                    "Trận Đông Khê và trận Cao Bằng.",
+                    "Trận Khe Sanh và trận Đường 9 - Nam Lào."
+                ],
+                correct: 0,
+                rationale: "Thực hiện chỉ thị 'Trận đầu phải thắng', đội đã đánh thắng hai trận đầu liên tiếp là Phai Khắt và Nà Ngần, mở đầu truyền thống đánh thắng trận đầu."
+            },
+            {
+                question: "Sự kiện Đội Việt Nam tuyên truyền giải phóng quân sáp nhập với lực lượng Cứu quốc quân và đổi tên thành Việt Nam giải phóng quân diễn ra vào thời gian nào?",
+                options: [
+                    "Ngày 15 tháng 5 năm 1945.",
+                    "Ngày 22 tháng 12 năm 1944.",
+                    "Ngày 19 tháng 8 năm 1945.",
+                    "Ngày 02 tháng 9 năm 1945."
+                ],
+                correct: 0,
+                rationale: "Ngày 15 tháng 5 năm 1945, lực lượng được sáp nhập và đổi tên thành Việt Nam giải phóng quân, trở thành lực lượng chủ yếu của Mặt trận Việt Minh."
+            },
+            {
+                question: "Theo quan điểm của Đảng và Chủ tịch Hồ Chí Minh, Quân đội nhân dân Việt Nam có mấy chức năng cơ bản?",
+                options: [
+                    "Ba chức năng: đội quân chiến đấu, đội quân công tác và đội quân lao động sản xuất.",
+                    "Hai chức năng: đội quân chiến đấu và đội quân sản xuất.",
+                    "Bốn chức năng: chiến đấu, công tác, sản xuất và ngoại giao quốc phòng.",
+                    "Một chức năng duy nhất là bảo vệ Tổ quốc."
+                ],
+                correct: 0,
+                rationale: "QĐND Việt Nam được xác định là đội quân cách mạng gồm ba chức năng: đội quân chiến đấu, đội quân công tác và đội quân lao động sản xuất."
+            },
+            {
+                question: "Cơ quan nào là cơ quan chỉ huy, điều hành Quân đội nhân dân và Dân quân tự vệ?",
+                options: [
+                    "Bộ Tổng Tham mưu.",
+                    "Tổng cục Chính trị.",
+                    "Tổng cục Hậu cần - Kỹ thuật.",
+                    "Bộ Tư lệnh Thủ đô Hà Nội."
+                ],
+                correct: 0,
+                rationale: "Bộ Tổng Tham mưu là cơ quan chỉ huy, điều hành Quân đội nhân dân và Dân quân tự vệ; tổ chức, chỉ đạo sự phát triển của quân đội."
+            },
+            {
+                question: "Tổng cục Chính trị Quân đội nhân dân Việt Nam hoạt động dưới sự lãnh đạo trực tiếp, thường xuyên của cơ quan nào?",
+                options: [
+                    "Ban Bí thư và Quân ủy Trung ương.",
+                    "Chính phủ và Bộ Quốc phòng.",
+                    "Quốc hội và Chủ tịch nước.",
+                    "Bộ Tổng Tham mưu."
+                ],
+                correct: 0,
+                rationale: "Tổng cục Chính trị đảm nhiệm công tác đảng, công tác chính trị trong toàn quân, hoạt động dưới sự lãnh đạo của Ban Bí thư và trực tiếp, thường xuyên của Quân ủy Trung ương."
+            },
+            {
+                question: "Các quân đoàn cơ động lớn hiện nay của Lục quân bao gồm những đơn vị nào?",
+                options: [
+                    "Quân đoàn 12, Quân đoàn 34.",
+                    "Quân đoàn 1, Quân đoàn 2, Quân đoàn 3, Quân đoàn 4.",
+                    "Quân đoàn 1 và Quân đoàn 3.",
+                    "Quân đoàn 2 và Quân đoàn 4."
+                ],
+                correct: 0,
+                rationale: "Theo tài liệu bài giảng, các quân đoàn cơ động lớn hiện nay của Lục quân bao gồm Quân đoàn 12 và Quân đoàn 34."
+            },
+            {
+                question: "Bộ Tư lệnh Tác chiến không gian mạng được thành lập vào ngày tháng năm nào?",
+                options: [
+                    "Ngày 15 tháng 8 năm 2017.",
+                    "Ngày 28 tháng 8 năm 1998.",
+                    "Ngày 03 tháng 3 năm 1959.",
+                    "Ngày 07 tháng 5 năm 1955."
+                ],
+                correct: 0,
+                rationale: "Bộ Tư lệnh Tác chiến không gian mạng được thành lập ngày 15/8/2017 nhằm bảo vệ chủ quyền quốc gia trên không gian mạng."
+            },
+            {
+                question: "Bộ Tư lệnh Cảnh sát biển Việt Nam được tổ chức thành mấy vùng Cảnh sát biển?",
+                options: [
+                    "Bốn vùng.",
+                    "Ba vùng.",
+                    "Năm vùng.",
+                    "Sáu vùng."
+                ],
+                correct: 0,
+                rationale: "Cảnh sát biển Việt Nam được tổ chức thành 4 vùng Cảnh sát biển (1, 2, 3, 4) để thực thi pháp luật và bảo vệ an ninh trên biển."
+            },
+            {
+                question: "Quân chủng Hải quân nhân dân Việt Nam được chính thức thành lập vào ngày tháng năm nào?",
+                options: [
+                    "Ngày 07 tháng 5 năm 1955.",
+                    "Ngày 22 tháng 12 năm 1944.",
+                    "Ngày 19 tháng 3 năm 1967.",
+                    "Ngày 25 tháng 3 năm 1946."
+                ],
+                correct: 0,
+                rationale: "Ngày 07 tháng 5 năm 1955, Bộ Quốc phòng ra Nghị định thành lập Cục Phòng thủ bờ biển, lấy làm ngày truyền thống Quân chủng Hải quân."
+            },
+            {
+                question: "Quân chủng Phòng không - Không quân được thành lập vào ngày tháng năm nào trên cơ sở sáp nhập những lực lượng nào?",
+                options: [
+                    "Ngày 22 tháng 10 năm 1963, sáp nhập Bộ Tư lệnh Phòng không và Cục Không quân.",
+                    "Ngày 15 tháng 5 năm 1945, sáp nhập Phòng không và Không quân.",
+                    "Ngày 13 tháng 4 năm 1967, sáp nhập Pháo binh và Không quân.",
+                    "Ngày 05 tháng 10 năm 1959, sáp nhập Tăng thiết giáp và Phòng không."
+                ],
+                correct: 0,
+                rationale: "Quân chủng Phòng không - Không quân thành lập ngày 22/10/1963 trên cơ sở sáp nhập Bộ Tư lệnh Phòng không và Cục Không quân."
+            },
+            {
+                question: "Chủ tịch Hồ Chí Minh đã tặng Binh chủng Pháo binh 8 chữ vàng nào vào ngày 13 tháng 4 năm 1967?",
+                options: [
+                    "\"Chân đồng, vai sắt, đánh giỏi, bắn trúng\".",
+                    "\"Mở đường thắng lợi\".",
+                    "\"Trung thành tuyệt đối, đánh thắng mọi kẻ thù\".",
+                    "\"Gan góc, mưu trí, dũng cảm, quyết thắng\"."
+                ],
+                correct: 0,
+                rationale: "Ngày 13/4/1967, Bác Hồ đã tặng Binh chủng Pháo binh 8 chữ vàng: 'Chân đồng, vai sắt, đánh giỏi, bắn trúng'."
+            },
+            {
+                question: "Binh chủng Tăng thiết giáp lấy ngày nào làm ngày truyền thống, gắn liền với việc thành lập Trung đoàn xe tăng đầu tiên (Trung đoàn 202)?",
+                options: [
+                    "Ngày 05 tháng 10 năm 1959.",
+                    "Ngày 19 tháng 3 năm 1967.",
+                    "Ngày 25 tháng 3 năm 1946.",
+                    "Ngày 19 tháng 4 năm 1958."
+                ],
+                correct: 0,
+                rationale: "Ngày 05 tháng 10 năm 1959 là ngày truyền thống Binh chủng Tăng thiết giáp, gắn liền với quyết định thành lập Trung đoàn 202."
+            },
+            {
+                question: "Trong quá trình phát triển, Binh chủng Đặc công bao gồm ba lực lượng chính nào?",
+                options: [
+                    "Đặc công bộ, đặc công nước và đặc công biệt động.",
+                    "Đặc công rừng, đặc công biển và đặc công không quân.",
+                    "Đặc công nhảy dù, đặc công nước và đặc công thiết giáp.",
+                    "Đặc công trinh sát, đặc công phá hoại và đặc công biệt động."
+                ],
+                correct: 0,
+                rationale: "Binh chủng Đặc công phát triển từ các lối đánh công đồn đặc biệt, bao gồm 3 lực lượng chính: đặc công bộ, đặc công nước và đặc công biệt động."
+            },
+            {
+                question: "Lực lượng Công binh đã được Chủ tịch Hồ Chí Minh tặng cờ truyền thống mang dòng chữ nào?",
+                options: [
+                    "\"Mở đường thắng lợi\".",
+                    "\"Quyết chiến quyết thắng\".",
+                    "\"Thần tốc, táo bạo, quyết thắng\".",
+                    "\"Đánh giỏi, bắn trúng\"."
+                ],
+                correct: 0,
+                rationale: "Năm 1952, lực lượng Công binh vinh dự được Chủ tịch Hồ Chí Minh tặng cờ truyền thống mang dòng chữ 'Mở đường thắng lợi'."
+            },
+            {
+                question: "Binh chủng Hóa học được thành lập chính thức vào ngày tháng năm nào trên cơ sở thành lập Tiểu đoàn hóa học đầu tiên?",
+                options: [
+                    "Ngày 19 tháng 4 năm 1958.",
+                    "Ngày 09 tháng 9 năm 1945.",
+                    "Ngày 25 tháng 3 năm 1946.",
+                    "Ngày 07 tháng 5 năm 1955."
+                ],
+                correct: 0,
+                rationale: "Binh chủng Hóa học thành lập ngày 19/4/1958 trên cơ sở thành lập Tiểu đoàn hóa học đầu tiên (Tiểu đoàn hóa học 6)."
+            },
+            {
+                question: "Binh chủng Thông tin liên lạc lấy ngày truyền thống là ngày tháng năm nào và ai là Trưởng phòng Thông tin Liên lạc quân sự đầu tiên?",
+                options: [
+                    "Ngày 09 tháng 9 năm 1945 do đồng chí Hoàng Đạo Thúy làm Trưởng phòng.",
+                    "Ngày 22 tháng 12 năm 1944 do đồng chí Võ Nguyên Giáp làm Trưởng phòng.",
+                    "Ngày 15 tháng 5 năm 1945 do đồng chí Trần Văn Quang làm Trưởng phòng.",
+                    "Ngày 29 tháng 6 năm 1946 do đồng chí Hoàng Văn Thái làm Trưởng phòng."
+                ],
+                correct: 0,
+                rationale: "Binh chủng Thông tin liên lạc lấy ngày truyền thống là 09/9/1945 do đồng chí Hoàng Đạo Thúy làm Trưởng phòng Thông tin Liên lạc quân sự đầu tiên."
+            },
+            {
+                question: "Trong công tác hiệp đồng tác chiến khi có lực lượng đổ bộ đường không tham chiến, cơ quan nào có trách nhiệm phối hợp lập kế hoạch hành lang bay, bãi đổ bộ?",
+                options: [
+                    "Cơ quan tham mưu đơn vị không quân phối hợp với cơ quan tham mưu binh chủng hợp thành.",
+                    "Chỉ có cơ quan tham mưu hải quân.",
+                    "Cơ quan hậu cần - kỹ thuật toàn quân.",
+                    "Tổng cục Tình báo quốc phòng."
+                ],
+                correct: 0,
+                rationale: "Theo mục 5 phần III bài giảng, cơ quan tham mưu đơn vị không quân có trách nhiệm phối hợp với cơ quan tham mưu binh chủng hợp thành tổ chức hiệp đồng này."
+            },
+            {
+                question: "Theo nội dung bài giảng, khi tác chiến đổ bộ đường biển, quá trình hành quân trên biển do lực lượng nào trực tiếp đảm nhiệm và tổ chức hiệp đồng?",
+                options: [
+                    "Lực lượng Hải quân.",
+                    "Lực lượng Không quân.",
+                    "Bộ đội Biên phòng.",
+                    "Lực lượng Công binh."
+                ],
+                correct: 0,
+                rationale: "Quá trình hành quân trên biển do hải quân đảm nhiệm, cơ quan tham mưu hải quân phải tổ chức hiệp đồng giữa các lực lượng đổ bộ với không quân, hải quân."
+            },
+            {
+                question: "Thông tư số 83/2025/TT-BQP do Bộ Quốc phòng ban hành ngày 07/8/2025 có hiệu lực quy định về nội dung gì quan trọng?",
+                options: [
+                    "Sửa đổi, bổ sung một số điều về phân định thẩm quyền trong lĩnh vực quốc phòng, DQTV, GDQPAN khi tổ chức chính quyền địa phương 02 cấp.",
+                    "Quy định về việc mua sắm trang thiết bị vũ khí hạt nhân mới.",
+                    "Quy định giải thể toàn bộ các quân khu trong quân đội.",
+                    "Quy định về chế độ tiền lương mới cho sĩ quan cấp tướng."
+                ],
+                correct: 0,
+                rationale: "Thông tư 83/2025/TT-BQP quy định việc phân định thẩm quyền quốc phòng, DQTV, GDQPAN khi tổ chức chính quyền địa phương 02 cấp."
+            }
+        ];
+
+        let questions = [];
+        let currentIndex = 0;
+        let userAnswers = [];
+        let score = 0;
+
+        function shuffleArray(array) {
+            let arr = [...array];
+            for (let i = arr.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [arr[i], arr[j]] = [arr[j], arr[i]];
+            }
+            return arr;
+        }
+
+        function startQuiz() {
+            // Đảo vị trí toàn bộ câu hỏi và đảo các đáp án bên trong mỗi câu hỏi
+            questions = shuffleArray(rawQuestionBank).map(q => {
+                const shuffledOpts = shuffleArray(q.options.map((opt, idx) => ({ text: opt, isCorrect: idx === q.correct })));
+                return {
+                    question: q.question,
+                    options: shuffledOpts.map(o => o.text),
+                    correct: shuffledOpts.findIndex(o => o.isCorrect),
+                    rationale: q.rationale
+                };
+            });
+
+            userAnswers = new Array(questions.length).fill(null);
+            currentIndex = 0;
+
+            document.getElementById('welcome-screen').classList.add('hidden');
+            document.getElementById('quiz-screen').classList.remove('hidden');
+            document.getElementById('quiz-status').classList.remove('hidden');
+            document.getElementById('total-q-num').innerText = questions.length;
+
+            loadQuestion();
+        }
+
+        function loadQuestion() {
+            const q = questions[currentIndex];
+            document.getElementById('current-q-num').innerText = currentIndex + 1;
+            document.getElementById('question-text').innerText = q.question;
+            
+            const progressPercent = ((currentIndex + 1) / questions.length) * 100;
+            document.getElementById('progress-bar').style.width = `${progressPercent}%`;
+
+            const optionsContainer = document.getElementById('options-container');
+            optionsContainer.innerHTML = '';
+
+            q.options.forEach((opt, idx) => {
+                const isSelected = userAnswers[currentIndex] === idx;
+                const btn = document.createElement('button');
+                btn.className = `w-full text-left p-4 rounded-xl border transition-all duration-150 flex items-center justify-between text-sm sm:text-base ${
+                    isSelected 
+                        ? 'bg-emerald-950/50 border-emerald-500 text-white shadow-md' 
+                        : 'bg-slate-700/50 border-slate-600 hover:bg-slate-700 text-slate-200'
+                }`;
+                
+                btn.innerHTML = `
+                    <span class="flex items-center gap-3">
+                        <span class="w-7 h-7 rounded-lg flex items-center justify-center text-xs font-bold ${isSelected ? 'bg-emerald-500 text-white' : 'bg-slate-600 text-slate-300'}">${String.fromCharCode(65 + idx)}</span>
+                        <span>${opt}</span>
+                    </span>
+                    <span class="${isSelected ? 'text-emerald-400 font-bold' : 'hidden'}">✓</span>
+                `;
+                btn.onclick = () => selectOption(idx);
+                optionsContainer.appendChild(btn);
+            });
+
+            const rationaleBox = document.getElementById('rationale-box');
+            if (userAnswers[currentIndex] !== null) {
+                rationaleBox.classList.remove('hidden');
+                document.getElementById('rationale-text').innerText = q.rationale;
+            } else {
+                rationaleBox.classList.add('hidden');
+            }
+
+            document.getElementById('prev-btn').disabled = currentIndex === 0;
+            document.getElementById('next-btn').innerText = currentIndex === questions.length - 1 ? 'Nộp bài & Xem điểm' : 'Câu tiếp theo →';
+        }
+
+        function selectOption(optionIndex) {
+            userAnswers[currentIndex] = optionIndex;
+            loadQuestion();
+        }
+
+        function nextQuestion() {
+            if (currentIndex < questions.length - 1) {
+                currentIndex++;
+                loadQuestion();
+            } else {
+                finishQuiz();
+            }
+        }
+
+        function prevQuestion() {
+            if (currentIndex > 0) {
+                currentIndex--;
+                loadQuestion();
+            }
+        }
+
+        function finishQuiz() {
+            let correctCount = 0;
+            questions.forEach((q, idx) => {
+                if (userAnswers[idx] === q.correct) {
+                    correctCount++;
+                }
+            });
+
+            // Tính điểm chính xác trên thang 0 - 10 (mỗi câu 0.5 điểm với 20 câu)
+            const exactScore = (correctCount / questions.length) * 10;
+            score = exactScore.toFixed(1);
+
+            document.getElementById('quiz-screen').classList.add('hidden');
+            document.getElementById('quiz-status').classList.add('hidden');
+            document.getElementById('result-screen').classList.remove('hidden');
+            document.getElementById('final-score').innerText = score;
+
+            let comment = "";
+            if (exactScore >= 9) comment = "Xuất sắc! Bạn nắm rất vững nội dung Bài giảng C3.";
+            else if (exactScore >= 7) comment = "Khá tốt! Bạn đã hiểu phần lớn kiến thức trọng tâm.";
+            else if (exactScore >= 5) comment = "Đạt yêu cầu, nhưng bạn nên đọc lại tài liệu để củng cố thêm.";
+            else comment = "Cần cố gắng ôn tập kỹ hơn nội dung Bài giảng C3 nhé!";
+            
+            document.getElementById('score-comment').innerText = comment;
+        }
+
+        function restartQuiz() {
+            document.getElementById('result-screen').classList.add('hidden');
+            document.getElementById('review-screen').classList.add('hidden');
+            startQuiz();
+        }
+
+        function reviewAnswers() {
+            document.getElementById('result-screen').classList.add('hidden');
+            const reviewList = document.getElementById('review-list');
+            reviewList.innerHTML = '';
+
+            questions.forEach((q, idx) => {
+                const userAns = userAnswers[idx];
+                const isCorrect = userAns === q.correct;
+
+                const div = document.createElement('div');
+                div.className = `p-4 rounded-xl border ${isCorrect ? 'bg-emerald-950/20 border-emerald-800/60' : 'bg-rose-950/20 border-rose-800/60'}`;
+                
+                let optionsHtml = '';
+                q.options.forEach((opt, oIdx) => {
+                    let badge = '';
+                    if (oIdx === q.correct) badge = '<span class="text-xs bg-emerald-600 text-white px-2 py-0.5 rounded ml-2">Đúng</span>';
+                    if (oIdx === userAns && !isCorrect) badge = '<span class="text-xs bg-rose-600 text-white px-2 py-0.5 rounded ml-2">Bạn chọn</span>';
+                    
+                    optionsHtml += `<li class="text-sm py-1 ${oIdx === q.correct ? 'font-semibold text-emerald-300' : (oIdx === userAns ? 'text-rose-300 font-semibold line-through' : 'text-slate-300')}">• ${opt} ${badge}</li>`;
+                });
+
+                div.innerHTML = `
+                    <p class="font-medium text-white mb-2">Câu ${idx + 1}: ${q.question}</p>
+                    <ul class="space-y-1 mb-3">${optionsHtml}</ul>
+                    <p class="text-xs text-slate-400 bg-slate-900/60 p-2.5 rounded-lg border border-slate-700"><strong>Giải thích:</strong> ${q.rationale}</p>
+                `;
+                reviewList.appendChild(div);
+            });
+
+            document.getElementById('review-screen').classList.remove('hidden');
+        }
+
+        function backToResult() {
+            document.getElementById('review-screen').classList.add('hidden');
+            document.getElementById('result-screen').classList.remove('hidden');
+        }
+    </script>
+</body>
+</html>
