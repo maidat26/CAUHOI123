@@ -59,6 +59,7 @@
 
             <!-- Rationale Box (Hidden until answered) -->
             <div id="rationale-box" class="hidden bg-slate-900/80 border border-slate-700 p-4 rounded-xl mb-6 text-sm">
+                <p id="answer-feedback" class="font-semibold mb-1"></p>
                 <p class="font-semibold text-emerald-400 mb-1">💡 Giải thích chi tiết:</p>
                 <p id="rationale-text" class="text-slate-300 leading-relaxed"></p>
             </div>
@@ -387,28 +388,41 @@
             const optionsContainer = document.getElementById('options-container');
             optionsContainer.innerHTML = '';
 
+            const isAnswered = userAnswers[currentIndex] !== null;
             q.options.forEach((opt, idx) => {
                 const isSelected = userAnswers[currentIndex] === idx;
+                const isCorrectOption = idx === q.correct;
                 const btn = document.createElement('button');
+                let optionStyle = 'bg-slate-700/50 border-slate-600 hover:bg-slate-700 text-slate-200';
+                if (isAnswered && isCorrectOption) {
+                    optionStyle = 'bg-emerald-950/50 border-emerald-500 text-white shadow-md';
+                } else if (isAnswered && isSelected) {
+                    optionStyle = 'bg-rose-950/50 border-rose-500 text-white shadow-md';
+                } else if (isSelected) {
+                    optionStyle = 'bg-emerald-950/50 border-emerald-500 text-white shadow-md';
+                }
                 btn.className = `w-full text-left p-4 rounded-xl border transition-all duration-150 flex items-center justify-between text-sm sm:text-base ${
-                    isSelected 
-                        ? 'bg-emerald-950/50 border-emerald-500 text-white shadow-md' 
-                        : 'bg-slate-700/50 border-slate-600 hover:bg-slate-700 text-slate-200'
+                    optionStyle
                 }`;
+                btn.disabled = isAnswered;
                 
                 btn.innerHTML = `
                     <span class="flex items-center gap-3">
-                        <span class="w-7 h-7 rounded-lg flex items-center justify-center text-xs font-bold ${isSelected ? 'bg-emerald-500 text-white' : 'bg-slate-600 text-slate-300'}">${String.fromCharCode(65 + idx)}</span>
+                        <span class="w-7 h-7 rounded-lg flex items-center justify-center text-xs font-bold ${isAnswered && isCorrectOption ? 'bg-emerald-500 text-white' : isAnswered && isSelected ? 'bg-rose-500 text-white' : isSelected ? 'bg-emerald-500 text-white' : 'bg-slate-600 text-slate-300'}">${String.fromCharCode(65 + idx)}</span>
                         <span>${opt}</span>
                     </span>
-                    <span class="${isSelected ? 'text-emerald-400 font-bold' : 'hidden'}">✓</span>
+                    <span class="${isAnswered && isCorrectOption ? 'text-emerald-400 font-bold' : isAnswered && isSelected ? 'text-rose-400 font-bold' : 'hidden'}">${isCorrectOption ? '✓' : '✗'}</span>
                 `;
                 btn.onclick = () => selectOption(idx);
                 optionsContainer.appendChild(btn);
             });
 
             const rationaleBox = document.getElementById('rationale-box');
-            if (userAnswers[currentIndex] !== null) {
+            if (isAnswered) {
+                const isCorrect = userAnswers[currentIndex] === q.correct;
+                const answerFeedback = document.getElementById('answer-feedback');
+                answerFeedback.className = `font-semibold mb-1 ${isCorrect ? 'text-emerald-400' : 'text-rose-400'}`;
+                answerFeedback.innerText = isCorrect ? '✓ Chính xác!' : '✗ Chưa chính xác. Đáp án đúng được đánh dấu ✓.';
                 rationaleBox.classList.remove('hidden');
                 document.getElementById('rationale-text').innerText = q.rationale;
             } else {
