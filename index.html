@@ -487,14 +487,14 @@
                 let optionsHtml = '';
                 q.options.forEach((opt, oIdx) => {
                     let badge = '';
-                    if (oIdx === q.correct) badge = '<span class="text-xs bg-emerald-600 text-white px-2 py-0.5 rounded ml-2">Đúng</span>';
-                    if (oIdx === userAns && !isCorrect) badge = '<span class="text-xs bg-rose-600 text-white px-2 py-0.5 rounded ml-2">Bạn chọn</span>';
+                    if (oIdx === q.correct) badge = '<span class="text-xs bg-emerald-600 text-white px-2 py-0.5 rounded ml-2">✓ Đáp án đúng</span>';
+                    if (oIdx === userAns && !isCorrect) badge = '<span class="text-xs bg-rose-600 text-white px-2 py-0.5 rounded ml-2">✗ Bạn chọn</span>';
                     
                     optionsHtml += `<li class="text-sm py-1 ${oIdx === q.correct ? 'font-semibold text-emerald-300' : (oIdx === userAns ? 'text-rose-300 font-semibold line-through' : 'text-slate-300')}">• ${opt} ${badge}</li>`;
                 });
 
                 div.innerHTML = `
-                    <p class="font-medium text-white mb-2">Câu ${idx + 1}: ${q.question}</p>
+                    <p class="font-medium text-white mb-2"><span class="${isCorrect ? 'text-emerald-400' : 'text-rose-400'}">${isCorrect ? '✓ Đúng' : '✗ Sai'}</span> - Câu ${idx + 1}: ${q.question}</p>
                     <ul class="space-y-1 mb-3">${optionsHtml}</ul>
                     <p class="text-xs text-slate-400 bg-slate-900/60 p-2.5 rounded-lg border border-slate-700"><strong>Giải thích:</strong> ${q.rationale}</p>
                 `;
