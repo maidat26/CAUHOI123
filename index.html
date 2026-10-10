@@ -5,15 +5,264 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Trắc nghiệm Ôn tập Bài giảng C3 - Giáo dục Quốc phòng và An ninh</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Inter', sans-serif; }
+        :root {
+            color-scheme: light;
+            --canvas: #eef3f0;
+            --surface: #ffffff;
+            --surface-muted: #f5f8f6;
+            --ink: #18312f;
+            --muted: #657a76;
+            --line: #dce6e1;
+            --green: #176b58;
+            --green-deep: #105044;
+            --green-pale: #e8f3ed;
+            --gold: #a96e21;
+            --gold-pale: #fbf2df;
+            --red: #b73f3a;
+            --red-pale: #fbefed;
+        }
+
+        * { box-sizing: border-box; }
+
+        body.app-shell {
+            min-height: 100vh;
+            background: linear-gradient(180deg, #f7faf8 0%, var(--canvas) 100%) !important;
+            color: var(--ink) !important;
+            font-family: 'Be Vietnam Pro', sans-serif;
+        }
+
+        .site-header {
+            background: rgba(255, 255, 255, 0.94) !important;
+            border-color: var(--line) !important;
+            box-shadow: 0 1px 2px rgba(24, 49, 47, 0.04) !important;
+            backdrop-filter: blur(12px);
+        }
+
+        .site-header > div { max-width: 1080px !important; min-height: 62px; }
+        .site-header h1 { color: var(--ink) !important; font-size: 16px; font-weight: 700; }
+        .site-header h1 > span {
+            display: grid;
+            width: 34px;
+            height: 34px;
+            place-items: center;
+            border: 1px solid #d4e8dd;
+            border-radius: 8px;
+            background: var(--green-pale);
+            font-size: 17px;
+        }
+
+        #quiz-status {
+            border: 1px solid #d5e7dd;
+            background: var(--green-pale) !important;
+            color: var(--green-deep) !important;
+            font-weight: 600;
+        }
+
+        main.page-content { max-width: 900px !important; padding: 40px 24px !important; }
+
+        main.page-content > .screen-panel {
+            width: 100%;
+            padding: clamp(24px, 4vw, 40px) !important;
+            border: 1px solid var(--line) !important;
+            border-radius: 8px !important;
+            background: var(--surface) !important;
+            box-shadow: 0 18px 50px rgba(25, 55, 46, 0.08) !important;
+            animation: panel-enter 260ms ease-out both;
+        }
+
+        @keyframes panel-enter {
+            from { opacity: 0; transform: translateY(7px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        #welcome-screen { max-width: 760px; margin: 0 auto; text-align: left !important; border-top: 3px solid var(--green) !important; }
+        #welcome-screen > div:first-child {
+            display: grid;
+            width: 52px;
+            height: 52px;
+            place-items: center;
+            margin: 0 0 22px !important;
+            border: 1px solid #eadbb9;
+            border-radius: 8px;
+            background: var(--gold-pale);
+            font-size: 25px;
+        }
+        #welcome-screen .welcome-kicker {
+            margin: 0 0 8px;
+            color: var(--green);
+            font-size: 11px;
+            font-weight: 800;
+            letter-spacing: 1px;
+        }
+        #welcome-screen h2 { margin-bottom: 12px !important; color: var(--ink) !important; font-size: 30px; line-height: 1.3; }
+        #welcome-screen > p:not(.welcome-kicker) { max-width: 650px; color: var(--muted) !important; font-size: 15px; line-height: 1.85; }
+        #welcome-screen strong { color: var(--green-deep); }
+        .welcome-facts {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            margin: 26px 0 24px;
+            border-top: 1px solid var(--line);
+            border-bottom: 1px solid var(--line);
+        }
+        .welcome-facts > div { display: flex; flex-direction: column; gap: 3px; padding: 14px 16px; }
+        .welcome-facts > div + div { border-left: 1px solid var(--line); }
+        .welcome-facts strong { color: var(--ink); font-size: 15px; }
+        .welcome-facts span { color: var(--muted); font-size: 12px; }
+
+        #welcome-screen button, #next-btn, #prev-btn, #result-screen button, #review-screen h2 button {
+            min-height: 44px;
+            border: 1px solid transparent;
+            border-radius: 6px !important;
+            font-family: inherit;
+            font-weight: 700;
+            transition: background-color 150ms ease, border-color 150ms ease, transform 150ms ease;
+        }
+        #welcome-screen button, #next-btn, #result-screen button:first-child {
+            background: var(--green) !important;
+            box-shadow: none !important;
+        }
+        #welcome-screen button:hover, #next-btn:hover, #result-screen button:first-child:hover { background: var(--green-deep) !important; }
+        #welcome-screen button:focus-visible, #next-btn:focus-visible, #prev-btn:focus-visible,
+        #result-screen button:focus-visible, #review-screen h2 button:focus-visible,
+        .answer-option:focus-visible { outline: 3px solid #e1b45e; outline-offset: 3px; }
+
+        #quiz-screen > div:first-child { height: 6px; background: #e5eee9 !important; }
+        #progress-bar { border-radius: 999px; background: var(--green) !important; }
+        #question-tag {
+            border-color: #d5e7dd !important;
+            border-radius: 4px !important;
+            background: var(--green-pale) !important;
+            color: var(--green-deep) !important;
+            letter-spacing: 0.5px !important;
+        }
+        #question-text { color: var(--ink) !important; font-size: 22px; font-weight: 700; line-height: 1.55; }
+        #options-container { display: grid; gap: 10px !important; }
+        .answer-option {
+            display: flex;
+            min-height: 64px;
+            align-items: center;
+            justify-content: space-between;
+            gap: 14px;
+            padding: 14px 16px;
+            border: 1px solid var(--line);
+            border-radius: 6px;
+            background: #fff;
+            color: var(--ink);
+            cursor: pointer;
+            font: 500 15px/1.55 'Be Vietnam Pro', sans-serif;
+            text-align: left;
+            transition: border-color 150ms ease, background-color 150ms ease, transform 150ms ease;
+        }
+        .answer-option:not(:disabled):hover { border-color: #8ab8a3; background: #f5faf7; transform: translateY(-1px); }
+        .answer-option:disabled { cursor: default; }
+        .option-copy { display: flex; min-width: 0; align-items: center; gap: 13px; }
+        .option-letter {
+            display: grid;
+            width: 30px;
+            height: 30px;
+            flex: 0 0 30px;
+            place-items: center;
+            border: 1px solid var(--line);
+            border-radius: 5px;
+            background: var(--surface-muted);
+            color: var(--muted);
+            font-size: 12px;
+            font-weight: 700;
+        }
+        .option-mark { flex: 0 0 auto; font-size: 20px; font-weight: 800; }
+        .answer-option.is-correct { border-color: #8abda4; background: var(--green-pale); color: var(--green-deep); }
+        .answer-option.is-correct .option-letter { border-color: var(--green); background: var(--green); color: #fff; }
+        .answer-option.is-correct .option-mark { color: var(--green); }
+        .answer-option.is-wrong { border-color: #e0a29d; background: var(--red-pale); color: #8e302d; }
+        .answer-option.is-wrong .option-letter { border-color: var(--red); background: var(--red); color: #fff; }
+        .answer-option.is-wrong .option-mark { color: var(--red); }
+
+        #rationale-box {
+            border: 1px solid var(--line) !important;
+            border-left: 3px solid var(--gold) !important;
+            border-radius: 6px !important;
+            background: var(--surface-muted) !important;
+            color: var(--muted);
+        }
+        #answer-feedback { font-size: 15px; }
+        #rationale-box > p:nth-child(2) { color: var(--ink) !important; }
+        #rationale-text { color: var(--muted) !important; }
+        #quiz-screen .pt-4.border-t { border-color: var(--line) !important; }
+        #prev-btn { border-color: var(--line); background: #fff !important; color: var(--ink) !important; }
+        #prev-btn:hover:not(:disabled) { background: var(--surface-muted) !important; }
+        #prev-btn:disabled { opacity: 0.5; }
+
+        #result-screen > div:first-child {
+            display: grid;
+            width: 64px;
+            height: 64px;
+            place-items: center;
+            margin: 0 auto 18px !important;
+            border: 1px solid #eadbb9;
+            border-radius: 50%;
+            background: var(--gold-pale);
+            font-size: 34px;
+        }
+        #result-screen h2, #review-screen h2 { color: var(--ink) !important; }
+        #result-screen > p { color: var(--muted) !important; }
+        #result-screen > div:nth-of-type(2) {
+            border: 1px solid var(--line) !important;
+            border-radius: 8px !important;
+            background: var(--surface-muted) !important;
+            box-shadow: none !important;
+        }
+        #result-screen > div:nth-of-type(2) > p:first-child { color: var(--muted) !important; }
+        #final-score { color: var(--green) !important; }
+        #score-comment { color: var(--ink) !important; }
+        #result-screen button:nth-child(2) { border-color: var(--line); background: #fff !important; color: var(--ink) !important; }
+        #result-screen button:nth-child(2):hover, #review-screen h2 button:hover { background: var(--surface-muted) !important; }
+
+        #review-screen h2 { gap: 16px; }
+        #review-screen h2 button { border-color: var(--line); background: #fff !important; color: var(--ink) !important; }
+        #review-list { max-height: 65vh; }
+        .review-item { padding: 18px; border: 1px solid var(--line); border-left-width: 3px; border-radius: 6px; background: #fff; }
+        .review-item.is-correct { border-left-color: var(--green); }
+        .review-item.is-wrong { border-left-color: var(--red); }
+        .review-question { margin-bottom: 12px; color: var(--ink); font-weight: 700; line-height: 1.6; }
+        .review-result.is-correct { color: var(--green); }
+        .review-result.is-wrong { color: var(--red); }
+        .review-options { margin: 0 0 14px; padding: 0; list-style: none; }
+        .review-option { padding: 6px 0; color: var(--muted); font-size: 14px; line-height: 1.6; }
+        .review-option.is-correct { color: var(--green-deep); font-weight: 600; }
+        .review-option.is-wrong { color: var(--red); font-weight: 600; text-decoration: line-through; }
+        .answer-badge { display: inline-block; margin-left: 8px; padding: 2px 7px; border-radius: 3px; color: #fff; font-size: 11px; font-weight: 700; text-decoration: none; }
+        .answer-badge.is-correct { background: var(--green); }
+        .answer-badge.is-wrong { background: var(--red); }
+        .review-rationale { margin: 0; padding: 12px; border: 1px solid var(--line); border-radius: 5px; background: var(--surface-muted); color: var(--muted); font-size: 13px; line-height: 1.7; }
+
+        footer.site-footer { border-color: var(--line) !important; color: var(--muted) !important; }
+
+        @media (max-width: 600px) {
+            .site-header { padding: 12px 16px !important; }
+            .site-header > div { align-items: flex-start !important; gap: 10px !important; }
+            main.page-content { padding: 24px 14px !important; }
+            #welcome-screen h2 { font-size: 24px; }
+            .welcome-facts > div { padding: 12px 8px; }
+            .welcome-facts strong { font-size: 13px; }
+            .welcome-facts span { font-size: 11px; }
+            #question-text { font-size: 19px; }
+            #quiz-screen .pt-4.border-t { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+            #prev-btn, #next-btn { padding-left: 10px !important; padding-right: 10px !important; font-size: 12px !important; }
+            #review-screen h2 { align-items: flex-start; }
+            #review-screen h2 button { flex: 0 0 auto; }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after { scroll-behavior: auto !important; animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+        }
     </style>
 </head>
-<body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col justify-between">
+<body class="app-shell bg-slate-900 text-slate-100 min-h-screen flex flex-col justify-between">
 
     <!-- Header -->
-    <header class="bg-slate-800 border-b border-slate-700 py-4 px-6 shadow-md">
+    <header class="site-header bg-slate-800 border-b border-slate-700 py-4 px-6 shadow-md">
         <div class="max-w-4xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-2">
             <h1 class="text-xl font-bold text-emerald-400 flex items-center gap-2">
                 <span>🛡️</span> Ôn Tập Bài Giảng C3 - GDQP&AN
@@ -25,22 +274,28 @@
     </header>
 
     <!-- Main Container -->
-    <main class="max-w-3xl w-full mx-auto p-4 sm:p-6 my-auto">
+    <main class="page-content max-w-3xl w-full mx-auto p-4 sm:p-6 my-auto">
         
         <!-- Welcome Screen -->
-        <div id="welcome-screen" class="bg-slate-800 border border-slate-700 rounded-2xl p-6 sm:p-8 shadow-xl text-center">
+        <div id="welcome-screen" class="screen-panel bg-slate-800 border border-slate-700 rounded-2xl p-6 sm:p-8 shadow-xl text-center">
             <div class="text-5xl mb-4">🎯</div>
+            <p class="welcome-kicker">ÔN TẬP • GDQP & AN</p>
             <h2 class="text-2xl font-bold mb-3 text-white">Kiểm tra & Ôn tập Kiến thức Bài C3</h2>
             <p class="text-slate-300 mb-6 leading-relaxed">
                 Hệ thống gồm <strong>20 câu hỏi</strong> bám sát nội dung bài giảng. Mỗi khi bạn tải lại trang hoặc bấm bắt đầu, các câu hỏi và đáp án sẽ được <strong>tự động đảo ngẫu nhiên</strong>. Kết quả sẽ được quy đổi trực tiếp theo thang điểm <strong>0 - 10</strong>.
             </p>
+            <div class="welcome-facts" aria-label="Thông tin bài ôn tập">
+                <div><strong>20 câu</strong><span>Bộ câu hỏi</span></div>
+                <div><strong>0 - 10</strong><span>Thang điểm</span></div>
+                <div><strong>Ngẫu nhiên</strong><span>Mỗi lượt làm</span></div>
+            </div>
             <button onclick="startQuiz()" class="bg-emerald-600 hover:bg-emerald-500 text-white font-semibold px-8 py-3 rounded-xl shadow-lg transition-all duration-200 transform hover:scale-105">
                 Bắt đầu làm bài ngay
             </button>
         </div>
 
         <!-- Quiz Screen -->
-        <div id="quiz-screen" class="bg-slate-800 border border-slate-700 rounded-2xl p-6 sm:p-8 shadow-xl hidden">
+        <div id="quiz-screen" class="screen-panel bg-slate-800 border border-slate-700 rounded-2xl p-6 sm:p-8 shadow-xl hidden">
             <!-- Progress Bar -->
             <div class="w-full bg-slate-700 h-2.5 rounded-full mb-6 overflow-hidden">
                 <div id="progress-bar" class="bg-emerald-500 h-full transition-all duration-300" style="width: 0%"></div>
@@ -76,7 +331,7 @@
         </div>
 
         <!-- Result Screen -->
-        <div id="result-screen" class="bg-slate-800 border border-slate-700 rounded-2xl p-6 sm:p-8 shadow-xl text-center hidden">
+        <div id="result-screen" class="screen-panel bg-slate-800 border border-slate-700 rounded-2xl p-6 sm:p-8 shadow-xl text-center hidden">
             <div class="text-6xl mb-3">🏆</div>
             <h2 class="text-2xl font-bold text-white mb-2">Hoàn thành bài kiểm tra!</h2>
             <p class="text-slate-300 mb-6">Dưới đây là kết quả chi tiết của bạn dựa trên thang điểm 0 - 10.</p>
@@ -98,7 +353,7 @@
         </div>
 
         <!-- Review Screen -->
-        <div id="review-screen" class="bg-slate-800 border border-slate-700 rounded-2xl p-6 sm:p-8 shadow-xl hidden">
+        <div id="review-screen" class="screen-panel bg-slate-800 border border-slate-700 rounded-2xl p-6 sm:p-8 shadow-xl hidden">
             <h2 class="text-xl font-bold text-white mb-4 flex items-center justify-between">
                 <span>Chi tiết đáp án</span>
                 <button onclick="backToResult()" class="text-sm bg-slate-700 hover:bg-slate-600 px-3 py-1 rounded-lg text-slate-300">Quay lại kết quả</button>
@@ -111,7 +366,7 @@
     </main>
 
     <!-- Footer -->
-    <footer class="text-center py-4 text-xs text-slate-500 border-t border-slate-800">
+    <footer class="site-footer text-center py-4 text-xs text-slate-500 border-t border-slate-800">
         Giáo dục Quốc phòng và An ninh - Bài giảng C3 | Hệ thống tự động đảo câu hỏi & chấm điểm
     </footer>
 
@@ -393,25 +648,20 @@
                 const isSelected = userAnswers[currentIndex] === idx;
                 const isCorrectOption = idx === q.correct;
                 const btn = document.createElement('button');
-                let optionStyle = 'bg-slate-700/50 border-slate-600 hover:bg-slate-700 text-slate-200';
+                btn.className = 'answer-option';
                 if (isAnswered && isCorrectOption) {
-                    optionStyle = 'bg-emerald-950/50 border-emerald-500 text-white shadow-md';
+                    btn.classList.add('is-correct');
                 } else if (isAnswered && isSelected) {
-                    optionStyle = 'bg-rose-950/50 border-rose-500 text-white shadow-md';
-                } else if (isSelected) {
-                    optionStyle = 'bg-emerald-950/50 border-emerald-500 text-white shadow-md';
+                    btn.classList.add('is-wrong');
                 }
-                btn.className = `w-full text-left p-4 rounded-xl border transition-all duration-150 flex items-center justify-between text-sm sm:text-base ${
-                    optionStyle
-                }`;
                 btn.disabled = isAnswered;
                 
                 btn.innerHTML = `
-                    <span class="flex items-center gap-3">
-                        <span class="w-7 h-7 rounded-lg flex items-center justify-center text-xs font-bold ${isAnswered && isCorrectOption ? 'bg-emerald-500 text-white' : isAnswered && isSelected ? 'bg-rose-500 text-white' : isSelected ? 'bg-emerald-500 text-white' : 'bg-slate-600 text-slate-300'}">${String.fromCharCode(65 + idx)}</span>
-                        <span>${opt}</span>
+                    <span class="option-copy">
+                        <span class="option-letter">${String.fromCharCode(65 + idx)}</span>
+                        <span class="option-text">${opt}</span>
                     </span>
-                    <span class="${isAnswered && isCorrectOption ? 'text-emerald-400 font-bold' : isAnswered && isSelected ? 'text-rose-400 font-bold' : 'hidden'}">${isCorrectOption ? '✓' : '✗'}</span>
+                    <span class="option-mark">${isAnswered && isCorrectOption ? '✓' : isAnswered && isSelected ? '✗' : ''}</span>
                 `;
                 btn.onclick = () => selectOption(idx);
                 optionsContainer.appendChild(btn);
@@ -496,21 +746,28 @@
                 const isCorrect = userAns === q.correct;
 
                 const div = document.createElement('div');
-                div.className = `p-4 rounded-xl border ${isCorrect ? 'bg-emerald-950/20 border-emerald-800/60' : 'bg-rose-950/20 border-rose-800/60'}`;
+                div.className = `review-item ${isCorrect ? 'is-correct' : 'is-wrong'}`;
                 
                 let optionsHtml = '';
                 q.options.forEach((opt, oIdx) => {
                     let badge = '';
-                    if (oIdx === q.correct) badge = '<span class="text-xs bg-emerald-600 text-white px-2 py-0.5 rounded ml-2">✓ Đáp án đúng</span>';
-                    if (oIdx === userAns && !isCorrect) badge = '<span class="text-xs bg-rose-600 text-white px-2 py-0.5 rounded ml-2">✗ Bạn chọn</span>';
+                    let optionClass = 'review-option';
+                    if (oIdx === q.correct) {
+                        optionClass += ' is-correct';
+                        badge = '<span class="answer-badge is-correct">✓ Đáp án đúng</span>';
+                    }
+                    if (oIdx === userAns && !isCorrect) {
+                        optionClass += ' is-wrong';
+                        badge = '<span class="answer-badge is-wrong">✗ Bạn chọn</span>';
+                    }
                     
-                    optionsHtml += `<li class="text-sm py-1 ${oIdx === q.correct ? 'font-semibold text-emerald-300' : (oIdx === userAns ? 'text-rose-300 font-semibold line-through' : 'text-slate-300')}">• ${opt} ${badge}</li>`;
+                    optionsHtml += `<li class="${optionClass}">• ${opt} ${badge}</li>`;
                 });
 
                 div.innerHTML = `
-                    <p class="font-medium text-white mb-2"><span class="${isCorrect ? 'text-emerald-400' : 'text-rose-400'}">${isCorrect ? '✓ Đúng' : '✗ Sai'}</span> - Câu ${idx + 1}: ${q.question}</p>
-                    <ul class="space-y-1 mb-3">${optionsHtml}</ul>
-                    <p class="text-xs text-slate-400 bg-slate-900/60 p-2.5 rounded-lg border border-slate-700"><strong>Giải thích:</strong> ${q.rationale}</p>
+                    <p class="review-question"><span class="review-result ${isCorrect ? 'is-correct' : 'is-wrong'}">${isCorrect ? '✓ Đúng' : '✗ Sai'}</span> - Câu ${idx + 1}: ${q.question}</p>
+                    <ul class="review-options">${optionsHtml}</ul>
+                    <p class="review-rationale"><strong>Giải thích:</strong> ${q.rationale}</p>
                 `;
                 reviewList.appendChild(div);
             });
